@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Parking System - Login & Register</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#F5F3FF',
+              100: '#EDE9FE',
+              200: '#DDD6FE',
+              300: '#C4B5FD',
+              400: '#A78BFA',
+              500: '#8B5CF6',
+              600: '#7C3AED',
+              700: '#6D28D9',
+              800: '#5B21B6',
+              900: '#4C1D95',
+              950: '#2E1065',
+            }
+          },
+          fontFamily: {
+            sans: ['Outfit', 'Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-brand-950 via-slate-950 to-brand-900 text-slate-100 font-sans flex items-center justify-center p-4 relative overflow-x-hidden">
+
+  <!-- Ambient glowing decorative background elements -->
+  <div class="absolute -top-32 -left-32 w-96 h-96 bg-brand-600/30 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-purple-600/25 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-800/15 rounded-full blur-[140px] pointer-events-none"></div>
+
+  <!-- Main Container -->
+  <div class="w-full max-w-md relative z-10">
+    
+    <!-- Branding Header -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 shadow-xl shadow-brand-600/40 mb-4 border border-brand-400/30 transform hover:scale-105 transition-transform duration-300">
+        <i class="fa-solid fa-car-side text-3xl text-white"></i>
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-brand-200 to-brand-400 bg-clip-text text-transparent">
+        SMART PARKING SYSTEM
+      </h1>
+      <p class="text-brand-200/80 text-sm mt-1">IoT-Powered Real-Time Parking & Reservation</p>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="glass-card rounded-3xl p-8 backdrop-blur-xl border border-brand-500/20 shadow-2xl shadow-purple-950/50">
+      
+      <!-- Tab Switcher -->
+      <div class="grid grid-cols-2 p-1.5 mb-6 rounded-2xl bg-brand-950/60 border border-brand-500/20">
+        <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-md shadow-brand-700/40">
+          <i class="fa-solid fa-right-to-bracket mr-2"></i>Login
+        </button>
+        <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300 text-brand-300 hover:text-white">
+          <i class="fa-solid fa-user-plus mr-2"></i>Register
+        </button>
+      </div>
+
+      <!-- Alert Notification Area -->
+      <div id="authAlert" class="hidden mb-5 p-3.5 rounded-xl text-sm font-medium border flex items-center gap-3 animate-fade-in">
+        <i id="authAlertIcon" class="fa-solid fa-circle-info text-base"></i>
+        <span id="authAlertMsg">Notification message</span>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+        <div>
+          <label for="loginEmail" class="block text-xs font-semibold text-brand-200 uppercase tracking-wider mb-2">
+            Email Address
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-400">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <input type="email" id="loginEmail" required placeholder="name@example.com"
+              class="w-full pl-10 pr-4 py-3 bg-brand-950/50 border border-brand-500/30 rounded-xl text-white placeholder-brand-400/50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label for="loginPassword" class="block text-xs font-semibold text-brand-200 uppercase tracking-wider mb-2">
+            Password
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-400">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <input type="password" id="loginPassword" required placeholder="••••••••"
+              class="w-full pl-10 pr-10 py-3 bg-brand-950/50 border border-brand-500/30 rounded-xl text-white placeholder-brand-400/50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-brand-400 hover:text-brand-200">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="loginSubmitBtn"
+          class="w-full py-3.5 px-4 bg-gradient-to-r from-brand-600 via-brand-500 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-brand-600/30 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
+          <span>Sign In to Dashboard</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <!-- Quick Demo Credentials Box -->
+        <div class="p-3 bg-brand-900/30 border border-brand-500/20 rounded-xl text-center">
+          <p class="text-xs text-brand-300 mb-1">Quick Demo Login:</p>
+          <button type="button" onclick="fillDemoCredentials()" class="text-xs font-mono bg-brand-800/60 hover:bg-brand-700/60 text-brand-200 px-3 py-1 rounded-lg border border-brand-500/30 transition-all inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-key text-[10px]"></i>
+            user@parking.com / password123
+          </button>
+        </div>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-5 hidden">
+        <div>
+          <label for="regName" class="block text-xs font-semibold text-brand-200 uppercase tracking-wider mb-2">
+            Full Name
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-400">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <input type="text" id="regName" required placeholder="John Doe"
+              class="w-full pl-10 pr-4 py-3 bg-brand-950/50 border border-brand-500/30 rounded-xl text-white placeholder-brand-400/50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label for="regEmail" class="block text-xs font-semibold text-brand-200 uppercase tracking-wider mb-2">
+            Email Address
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-400">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <input type="email" id="regEmail" required placeholder="name@example.com"
+              class="w-full pl-10 pr-4 py-3 bg-brand-950/50 border border-brand-500/30 rounded-xl text-white placeholder-brand-400/50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label for="regPassword" class="block text-xs font-semibold text-brand-200 uppercase tracking-wider mb-2">
+            Create Password
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-400">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <input type="password" id="regPassword" required placeholder="Min 6 characters"
+              class="w-full pl-10 pr-10 py-3 bg-brand-950/50 border border-brand-500/30 rounded-xl text-white placeholder-brand-400/50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            <button type="button" onclick="togglePasswordVisibility('regPassword', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-brand-400 hover:text-brand-200">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="regSubmitBtn"
+          class="w-full py-3.5 px-4 bg-gradient-to-r from-brand-600 via-brand-500 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-brand-600/30 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
+          <span>Create Account</span>
+          <i class="fa-solid fa-user-check"></i>
+        </button>
+      </form>
+
+    </div>
+
+    <!-- Footer info -->
+    <div class="text-center mt-6 text-xs text-brand-300/60">
+      NodeMCU ESP8266 &bull; IR Sensors &bull; 16x2 LCD &bull; Node.js SQLite
+    </div>
+  </div>
+
+  <script>
+    // Check if user is already logged in
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('parking_token');
+      if (token) {
+        // Redirect to dashboard
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    function switchAuthTab(tab) {
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const tabLoginBtn = document.getElementById('tabLoginBtn');
+      const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+      hideAlert();
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        tabLoginBtn.className = "py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-md shadow-brand-700/40";
+        tabRegisterBtn.className = "py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300 text-brand-300 hover:text-white";
+      } else {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        tabRegisterBtn.className = "py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300 bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-md shadow-brand-700/40";
+        tabLoginBtn.className = "py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300 text-brand-300 hover:text-white";
+      }
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function showAlert(message, isError = false) {
+      const alert = document.getElementById('authAlert');
+      const msg = document.getElementById('authAlertMsg');
+      const icon = document.getElementById('authAlertIcon');
+      msg.textContent = message;
+      alert.classList.remove('hidden');
+
+      if (isError) {
+        alert.className = "mb-5 p-3.5 rounded-xl text-sm font-medium border flex items-center gap-3 bg-red-950/60 border-red-500/40 text-red-200";
+        icon.className = "fa-solid fa-triangle-exclamation text-red-400";
+      } else {
+        alert.className = "mb-5 p-3.5 rounded-xl text-sm font-medium border flex items-center gap-3 bg-emerald-950/60 border-emerald-500/40 text-emerald-200";
+        icon.className = "fa-solid fa-circle-check text-emerald-400";
+      }
+    }
+
+    function hideAlert() {
+      const alert = document.getElementById('authAlert');
+      alert.classList.add('hidden');
+    }
+
+    function fillDemoCredentials() {
+      document.getElementById('loginEmail').value = 'user@parking.com';
+      document.getElementById('loginPassword').value = 'password123';
+      showAlert('Demo credentials filled. Click "Sign In to Dashboard"!', false);
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideAlert();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...`;
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert('Login successful! Redirecting to Dashboard...', false);
+          localStorage.setItem('parking_token', data.token);
+          localStorage.setItem('parking_user', JSON.stringify(data.user));
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 600);
+        } else {
+          showAlert(data.message || 'Login failed. Please check credentials.', true);
+        }
+      } catch (err) {
+        showAlert('Could not connect to server. Is the backend running?', true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Sign In to Dashboard</span><i class="fa-solid fa-arrow-right"></i>`;
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      hideAlert();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const btn = document.getElementById('regSubmitBtn');
+
+      if (password.length < 6) {
+        return showAlert('Password must be at least 6 characters.', true);
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creating Account...`;
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert('Account registered! Redirecting to Dashboard...', false);
+          localStorage.setItem('parking_token', data.token);
+          localStorage.setItem('parking_user', JSON.stringify(data.user));
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 600);
+        } else {
+          showAlert(data.message || 'Registration failed.', true);
+        }
+      } catch (err) {
+        showAlert('Could not connect to server. Is the backend running?', true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Create Account</span><i class="fa-solid fa-user-check"></i>`;
+      }
+    }
+  </script>
+</body>
+</html>

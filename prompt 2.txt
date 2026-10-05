@@ -1,0 +1,1137 @@
+# Create IoT + Web Application
+
+## IoT Details
+
+**Project/App Name: Smart Parking System**
+
+### Microcontroller:
+ESP8266 (NodeMCU)
+
+### Sensors:
+- IR Sensor 1 → Parking Slot 1 → D5
+- IR Sensor 2 → Parking Slot 2 → D6
+
+### Display:
+16x2 LCD with I2C Module
+
+- SDA → D2
+- SCL → D1
+- I2C Address → 0x27
+
+### LEDs:
+- LED 1 → Parking Slot 1 → D7
+- LED 2 → Parking Slot 2 → D8
+
+Use suitable resistors (220Ω–330Ω) with LEDs.
+
+### Other Hardware:
+- NodeMCU ESP8266
+- 2 × IR Sensors
+- 16×2 LCD
+- I2C Module
+- 2 × LEDs
+- Breadboard
+- Resistors
+- Jumper Wires
+- USB Cable
+
+---
+
+# MOST IMPORTANT
+
+**This Web App should be fully deployable on Render.**
+
+The backend must listen on:
+
+```javascript
+process.env.PORT
+```
+
+and use:
+
+```javascript
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
+```
+
+Do not hardcode the localhost port for production.
+
+The project must be structured so that it can be directly deployed as a Render Web Service.
+
+The deployed Render URL will be used by the ESP8266 for API communication.
+
+---
+
+# Web Application
+
+## Tech Stack
+
+### Frontend:
+HTML, CSS, JavaScript, Tailwind CSS
+
+### Backend:
+Node.js, Express.js
+
+### Database:
+SQLite
+
+### Communication:
+REST API between ESP8266 and Node.js/Express backend.
+
+The ESP8266 must communicate with the deployed Render backend using HTTP requests.
+
+---
+
+# Web Application Features
+
+## Page 1: Login Page
+
+Create a modern and attractive login page.
+
+### Fields:
+
+- Email
+- Password
+
+### Buttons:
+
+- Login
+- Register
+
+### Registration fields:
+
+- Name
+- Email
+- Password
+
+After successful login, redirect the user to the Smart Parking Dashboard.
+
+Use a **purple-themed UI**.
+
+---
+
+# Page 2: Web Dashboard
+
+## Tab 1: Parking Dashboard
+
+Show the following KPI cards with large and attractive UI:
+
+### Card 1:
+
+**TOTAL SLOTS**
+
+Display:
+
+```text
+2
+```
+
+### Card 2:
+
+**AVAILABLE SLOTS**
+
+Display the number of currently available parking slots.
+
+### Card 3:
+
+**RESERVED SLOTS**
+
+Display the number of slots currently reserved through the website.
+
+### Card 4:
+
+**OCCUPIED SLOTS**
+
+Display the number of slots where a vehicle is physically detected by the IR sensors.
+
+All four cards must update automatically in real time.
+
+---
+
+# Parking Slot Display
+
+Display individual parking slot cards.
+
+Example:
+
+```text
+SLOT 1
+
+Status:
+AVAILABLE
+
+[ RESERVE SLOT ]
+```
+
+Second slot:
+
+```text
+SLOT 2
+
+Status:
+OCCUPIED
+
+[ NOT AVAILABLE ]
+```
+
+The website must display the real-time status of each parking slot.
+
+---
+
+# Parking Slot Status
+
+Each slot can have the following states:
+
+### Available
+
+```text
+🟢 AVAILABLE
+```
+
+The IR sensor does not detect a vehicle and the slot is not reserved.
+
+### Reserved
+
+```text
+🟡 RESERVED
+```
+
+The user has reserved the slot from the website but the vehicle has not yet been detected.
+
+### Occupied
+
+```text
+🔴 OCCUPIED
+```
+
+The IR sensor detects a vehicle in the parking slot.
+
+Use clear visual status indicators.
+
+---
+
+# Reservation Feature
+
+The user must be able to reserve an available parking slot from the website.
+
+Example:
+
+```text
+SLOT 1
+AVAILABLE
+
+[ RESERVE SLOT ]
+```
+
+When the user clicks **RESERVE SLOT**:
+
+1. Send reservation request to the Node.js backend.
+2. Store the reservation in SQLite.
+3. Change Slot 1 status to RESERVED.
+4. Update Reserved Slots count.
+5. Decrease Available Slots count.
+6. Send the updated reservation status to ESP8266.
+7. ESP8266 must update the corresponding LED.
+8. LCD must display the updated parking status.
+
+A reserved slot must not be available for another reservation.
+
+---
+
+# IMPORTANT STATUS LOGIC
+
+The system must distinguish between:
+
+**Physical vehicle detection** and **Website reservation**.
+
+The IR sensors determine whether a vehicle is physically present.
+
+The website determines whether a slot has been reserved.
+
+Use the following logic:
+
+| Vehicle | Reserved | Final Status |
+|---|---|---|
+| No | No | AVAILABLE |
+| No | Yes | RESERVED |
+| Yes | No | OCCUPIED |
+| Yes | Yes | OCCUPIED |
+
+If a reserved slot gets a vehicle, show:
+
+```text
+OCCUPIED
+```
+
+and retain the reservation information in the database.
+
+---
+
+# Real-Time Parking Detection
+
+ESP8266 must continuously read both IR sensors.
+
+### Slot 1:
+
+```text
+IR Sensor 1 → D5
+```
+
+### Slot 2:
+
+```text
+IR Sensor 2 → D6
+```
+
+When a vehicle enters Slot 1:
+
+```text
+Slot 1 → OCCUPIED
+```
+
+When the vehicle leaves:
+
+```text
+Slot 1 → AVAILABLE
+```
+
+provided that the slot is not reserved.
+
+The same logic must apply to Slot 2.
+
+The website must automatically update according to the latest ESP8266 sensor data.
+
+---
+
+# Real-Time Updates
+
+The system should continuously synchronize:
+
+```text
+ESP8266
+   ↓
+Node.js Backend
+   ↓
+SQLite Database
+   ↓
+Website Dashboard
+```
+
+The website should update parking information automatically without requiring the user to manually refresh the page.
+
+Use polling or another simple real-time mechanism suitable for a student IoT project.
+
+Recommended:
+
+```text
+Website requests updated parking status every 1–2 seconds.
+```
+
+---
+
+# Tab 2: Parking Slot Management
+
+Create a separate dashboard tab showing all parking slots.
+
+Display:
+
+```text
+Slot Number
+Current Status
+Reservation Status
+Vehicle Detection
+LED Status
+Last Updated
+```
+
+Example:
+
+```text
+# | Slot | Status    | Reserved | Vehicle | LED
+1 | S1   | Available | No       | No      | OFF
+2 | S2   | Occupied  | No       | Yes     | ON
+```
+
+---
+
+# Tab 3: Reservation Management
+
+Display all current reservations.
+
+Columns:
+
+```text
+# | Slot | User | Reservation Status | Date | Time | Action
+```
+
+Allow the user to cancel their reservation.
+
+When a reservation is cancelled:
+
+1. Update the reservation in SQLite.
+2. Update the slot status.
+3. Update Available Slots count.
+4. Update Reserved Slots count.
+5. Send updated information to ESP8266.
+6. Update LCD.
+7. Update LED.
+
+---
+
+# ESP8266 Communication APIs
+
+Create REST APIs for communication between ESP8266 and the backend.
+
+## ESP8266 → Server
+
+Create API:
+
+```text
+POST /api/parking/update
+```
+
+ESP8266 should send:
+
+```json
+{
+  "slot1": {
+    "vehicleDetected": true
+  },
+  "slot2": {
+    "vehicleDetected": false
+  }
+}
+```
+
+The backend must update the database and calculate:
+
+```text
+Total Slots
+Available Slots
+Reserved Slots
+Occupied Slots
+```
+
+---
+
+# Server → ESP8266
+
+Create API:
+
+```text
+GET /api/parking/status
+```
+
+The ESP8266 should periodically request the latest parking and reservation status.
+
+Example response:
+
+```json
+{
+  "totalSlots": 2,
+  "availableSlots": 1,
+  "reservedSlots": 1,
+  "occupiedSlots": 0,
+  "slots": {
+    "slot1": {
+      "status": "reserved",
+      "reserved": true,
+      "vehicleDetected": false
+    },
+    "slot2": {
+      "status": "available",
+      "reserved": false,
+      "vehicleDetected": false
+    }
+  }
+}
+```
+
+---
+
+# Reservation API
+
+Create:
+
+```text
+POST /api/parking/reserve
+```
+
+Example request:
+
+```json
+{
+  "slot": 1
+}
+```
+
+The backend must check whether the slot is available before reserving it.
+
+If available:
+
+```text
+Reservation Successful
+```
+
+If already occupied:
+
+```text
+Slot Occupied
+```
+
+If already reserved:
+
+```text
+Slot Already Reserved
+```
+
+---
+
+# Cancel Reservation API
+
+Create:
+
+```text
+POST /api/parking/cancel
+```
+
+Example:
+
+```json
+{
+  "slot": 1
+}
+```
+
+After cancellation, update the database and ESP8266.
+
+---
+
+# LCD Hardware Output
+
+## LCD 16×2 I2C
+
+Use the LCD to show the real-time parking information.
+
+### Startup
+
+```text
+SMART PARKING
+SYSTEM
+```
+
+Delay 3 seconds.
+
+### WiFi Connection
+
+```text
+CONNECTING TO
+WiFi........
+```
+
+### After Connection
+
+```text
+WiFi
+CONNECTED
+```
+
+### Main Parking Display
+
+Display:
+
+```text
+S1: AVAILABLE
+S2: OCCUPIED
+```
+
+Then:
+
+```text
+TOTAL: 2
+AVAIL: 1
+```
+
+Then:
+
+```text
+RES: 0
+OCC: 1
+```
+
+Then continue cycling through the information.
+
+---
+
+# LCD Reservation Display
+
+If Slot 1 is reserved:
+
+```text
+S1: RESERVED
+S2: AVAILABLE
+```
+
+If Slot 1 becomes occupied:
+
+```text
+S1: OCCUPIED
+S2: AVAILABLE
+```
+
+The LCD must always show the latest information received from the server.
+
+---
+
+# LED Hardware Logic
+
+### Slot 1
+
+```text
+LED 1 → D7
+```
+
+### Slot 2
+
+```text
+LED 2 → D8
+```
+
+For the basic hardware version:
+
+```text
+LED ON  → Slot is occupied/reserved
+LED OFF → Slot is available
+```
+
+If multiple LEDs are available, support:
+
+```text
+GREEN → AVAILABLE
+YELLOW → RESERVED
+RED → OCCUPIED
+```
+
+The LED status must be controlled according to the latest status received from the server.
+
+---
+
+# ESP8266 Main Loop
+
+The ESP8266 must continuously perform these tasks:
+
+### 1. Read IR sensors
+
+```text
+Read Sensor 1
+Read Sensor 2
+```
+
+### 2. Determine vehicle status
+
+```text
+Slot 1 → Vehicle Detected / Not Detected
+Slot 2 → Vehicle Detected / Not Detected
+```
+
+### 3. Send sensor data to server
+
+```text
+POST /api/parking/update
+```
+
+### 4. Fetch reservation information
+
+```text
+GET /api/parking/status
+```
+
+### 5. Update LEDs
+
+According to:
+
+```text
+Available
+Reserved
+Occupied
+```
+
+### 6. Update LCD
+
+Show the latest parking information.
+
+Repeat continuously.
+
+---
+
+# WiFi Credentials
+
+Use variables in ESP8266 code:
+
+```cpp
+const char* WIFI_SSID = "YOUR_WIFI_NAME";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+```
+
+Do not hardcode real credentials in publicly uploaded GitHub code.
+
+---
+
+# Render URL
+
+Keep this variable configurable:
+
+```cpp
+const char* SERVER_URL = "YOUR_RENDER_URL";
+```
+
+After deployment, the user will enter the actual Render URL.
+
+Example:
+
+```text
+https://smart-parking-system.onrender.com
+```
+
+Do not use a fake Render URL.
+
+---
+
+# Render Deployment Requirements
+
+The Node.js application must be compatible with Render.
+
+Use:
+
+```javascript
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
+```
+
+Create:
+
+```text
+package.json
+```
+
+with all required dependencies.
+
+The application must provide a proper start command:
+
+```text
+npm start
+```
+
+The Render deployment must serve both:
+
+```text
+Frontend
++
+Backend APIs
+```
+
+from the same deployed application.
+
+The ESP8266 must communicate with the deployed Render URL, not localhost.
+
+---
+
+# Project Folder Structure
+
+Use a clean structure:
+
+```text
+Smart-Parking-System/
+│
+├── server.js
+├── package.json
+├── parking.db
+│
+├── public/
+│   ├── index.html
+│   ├── dashboard.html
+│   ├── style.css
+│   └── script.js
+│
+└── esp8266/
+    └── smart_parking.ino
+```
+
+Do not expose sensitive credentials.
+
+---
+
+# Web App Header
+
+Header should display:
+
+```text
+🚗 SMART PARKING SYSTEM
+
+Welcome, User
+```
+
+Also display:
+
+```text
+ESP8266 STATUS: ONLINE
+```
+
+or:
+
+```text
+ESP8266 STATUS: OFFLINE
+```
+
+The ESP8266 online/offline status should be determined from its latest communication with the server.
+
+---
+
+# ESP8266 Online / Offline
+
+If ESP8266 has not communicated with the server for a specified period, show:
+
+```text
+ESP8266: OFFLINE
+```
+
+When ESP8266 sends data again:
+
+```text
+ESP8266: ONLINE
+```
+
+Display this status on the website dashboard.
+
+---
+
+# Web App Theme
+
+Use a **modern purple smart-parking theme**.
+
+### Primary Color:
+
+**Purple**
+
+### Color Palette:
+
+- Purple
+- Dark Purple
+- Light Purple
+- White
+- Soft Gray
+
+Use purple gradients throughout the website.
+
+Example:
+
+```text
+Primary: #7C3AED
+Dark Purple: #4C1D95
+Light Purple: #A78BFA
+Background: #F5F3FF
+```
+
+Use purple for:
+
+- Header
+- Navigation
+- Buttons
+- Dashboard cards
+- Borders
+- Icons
+- Active tabs
+- Login/Register page
+
+Use status colors separately:
+
+```text
+Available → Green
+Reserved → Yellow
+Occupied → Red
+```
+
+Do not use purple for the actual parking status indicators because the three statuses should be immediately distinguishable.
+
+---
+
+# Light/Dark Mode
+
+Add a Light/Dark Mode Toggle.
+
+### Light Mode:
+
+blue gradient + white cards + light blue background.
+
+### Dark Mode:
+
+Dark purple/black background +  purple cards + light text.
+
+The selected theme should be saved in browser localStorage.
+
+---
+
+# Dashboard Design
+
+Use visually attractive cards:
+
+```text
+┌────────────────────┐
+│   TOTAL SLOTS      │
+│        2           │
+└────────────────────┘
+
+┌────────────────────┐
+│   AVAILABLE        │
+│        1           │
+└────────────────────┘
+
+┌────────────────────┐
+│   RESERVED         │
+│        1           │
+└────────────────────┘
+
+┌────────────────────┐
+│   OCCUPIED         │
+│        0           │
+└────────────────────┘
+```
+
+Cards should have a modern purple gradient design.
+
+Add smooth hover effects and subtle animations.
+
+---
+
+# Parking Visualization
+
+Create a visual parking area on the dashboard.
+
+Example:
+
+```text
+             PARKING AREA
+
+┌──────────────────┐
+│     SLOT 1       │
+│                  │
+│    🟢 FREE       │
+│                  │
+│  [ RESERVE ]     │
+└──────────────────┘
+
+┌──────────────────┐
+│     SLOT 2       │
+│                  │
+│   🔴 OCCUPIED    │
+│                  │
+│ [NOT AVAILABLE]  │
+└──────────────────┘
+```
+
+The visualization must update automatically according to ESP8266 sensor data.
+
+---
+
+# Timezone
+
+Use:
+
+```text
+Asia/Kolkata
+UTC +5:30
+```
+
+Display reservation date and time according to Indian Standard Time.
+
+---
+
+# Database
+
+Create a SQLite database with appropriate tables.
+
+### Slots Table
+
+```text
+id
+slot_number
+status
+vehicle_detected
+reserved
+updated_at
+```
+
+### Users Table
+
+```text
+id
+name
+email
+password
+```
+
+### Reservations Table
+
+```text
+id
+slot_number
+user_id
+status
+reserved_at
+cancelled_at
+```
+
+---
+
+# Important Functional Requirements
+
+The system must satisfy all of the following:
+
+1. ESP8266 connects to WiFi.
+2. ESP8266 reads both IR sensors.
+3. IR Sensor 1 controls Slot 1 detection.
+4. IR Sensor 2 controls Slot 2 detection.
+5. ESP8266 sends sensor information to the Node.js server.
+6. Server stores the latest status.
+7. Website displays real-time parking status.
+8. Website displays Total Slots.
+9. Website displays Available Slots.
+10. Website displays Reserved Slots.
+11. Website displays Occupied Slots.
+12. User can reserve an available slot.
+13. User cannot reserve an occupied slot.
+14. User cannot reserve an already reserved slot.
+15. Reservation status is sent to ESP8266.
+16. ESP8266 updates the appropriate LED.
+17. ESP8266 updates the LCD.
+18. Vehicle detection changes the website status automatically.
+19. Vehicle detection changes LCD status.
+20. ESP8266 online/offline status is shown on the website.
+21. Website is responsive.
+22. Light/Dark mode is available.
+23. Website uses a purple theme.
+24. Application must be deployable on Render.
+25. Backend must use `process.env.PORT`.
+26. Do not hardcode production credentials.
+27. Use Indian timezone `Asia/Kolkata`.
+28. Do not use fake sensor data.
+29. Parking status must come from actual IR sensor readings.
+30. Website reservation must communicate with the ESP8266.
+
+---
+
+# Hardware Output Summary
+
+### ESP8266 NodeMCU
+
+```text
+D5 → IR Sensor 1
+D6 → IR Sensor 2
+
+D2 → LCD SDA
+D1 → LCD SCL
+
+D7 → LED 1
+D8 → LED 2
+```
+
+### LCD
+
+```text
+16 × 2 I2C LCD
+Address: 0x27
+```
+
+### Parking Slots
+
+```text
+Slot 1 → IR Sensor 1 → LED 1
+Slot 2 → IR Sensor 2 → LED 2
+```
+
+---
+
+# Final System Architecture
+
+```text
+                    ┌────────────────────────┐
+                    │       WEBSITE          │
+                    │                        │
+                    │  Purple Dashboard      │
+                    │  Slot Status           │
+                    │  Reservation           │
+                    │  Login/Register         │
+                    └───────────┬────────────┘
+                                │
+                                │ REST API
+                                ▼
+                    ┌────────────────────────┐
+                    │     RENDER SERVER      │
+                    │                        │
+                    │ Node.js + Express      │
+                    │ SQLite Database        │
+                    └───────────┬────────────┘
+                                │
+                                │ Internet
+                                ▼
+                    ┌────────────────────────┐
+                    │     ESP8266 NodeMCU    │
+                    │        WiFi IoT        │
+                    └─────────┬──────┬───────┘
+                              │      │
+                    ┌─────────┘      └─────────┐
+                    ▼                          ▼
+              IR SENSOR 1                IR SENSOR 2
+                SLOT 1                     SLOT 2
+                    │                          │
+                    └──────────┬───────────────┘
+                               │
+                            ESP8266
+                               │
+                    ┌──────────┴──────────┐
+                    ▼                     ▼
+                 LCD 16×2               LEDs
+                   I2C               Slot Status
+```
+
+---
+
+# MOST IMPORTANT
+
+Generate the **complete working source code** for:
+
+1. Node.js + Express backend
+2. SQLite database
+3. HTML
+4. CSS
+5. JavaScript
+6. ESP8266 Arduino code
+7. REST APIs
+8. Login/Register
+9. Purple-themed parking dashboard
+10. Slot reservation
+11. Reservation cancellation
+12. Real-time parking updates
+13. ESP8266 online/offline status
+14. LCD display handling
+15. LED control
+16. Render deployment configuration
+17. `package.json`
+18. Complete project folder structure
+19. README with setup instructions
+
+The final project must be beginner-friendly and easy to run in VS Code.
+
+**Do not use fake sensor data.**
+
+The website must receive actual parking information from the ESP8266.
+
+**Do not create automated testing. I will perform manual testing.**
+
+First provide the complete project structure, then provide all required code files, then provide the ESP8266 wiring instructions, then provide the Render deployment steps.
+
+**Make sure every component, API, GPIO/D-pin assignment, website feature, reservation feature, LCD feature, LED feature, and Render deployment requirement mentioned above is implemented.**
